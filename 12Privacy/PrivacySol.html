@@ -78,8 +78,9 @@
           privacyContrAddr
         );
 
-        //view contract storage
         let res;
+
+        //view contract storage
         for (let i = 0; i < 6; i++) {
           res = await window.web3.eth.getStorageAt(privacyContrAddr, i);
           console.log(i, res);

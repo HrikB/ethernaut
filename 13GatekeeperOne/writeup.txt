@@ -1,0 +1,30 @@
+There are three gates to pass before making myself the entrant
+
+(1) The first gate is very simple. The transaction origin cannot be the same as msg.sender. All I have to do is use a contract to initate the function call
+
+(2) The second gate makes a call to gasLeft() which will make a lower level call to GAS. We will have to send a custom gas amount in this format: 
+
+        contr.enter{gas: gasAmount}(b)
+
+    where contr is the reference to the Contract. The gasAmount variable will be determined by this formula 8191 * i + gasUntil where i is any number that will allow sufficent gas for the Gatekeeper Contract to run and gasUntil is the amount of gas used until the gasleft() function is called. I simply set 'i' to 5 as 45000 gas seemed more than enough for how little code the contract was executing. To figure out 'gasUntil' I used the remix debugger. I first ran the debugger and followed it until it hit the GAS Opcode and noted it's location at instruciton 298. Then I ran the debugger again this time noting what the gas starts at (can be found in debugger) and what it was at right before running the GAS Opcode. It had consumed 252 gas to reach that point. But according to Mastering Ethereum:
+
+        GAS             //Get the amount of available gas (after the reduction for
+                        //this instruction)
+    
+    The GAS Opcode calculates remaining gas AFTER execution of the opcode. Which means I had to add another 2 gas leaving me with a total consumption of 254 gas before the gasleft() calculated it's result. So I simply add that number to my multiple of 8191. Note that this code is potentially not going to work in the future as EVM opcodes are updated often.
+
+(3) The third gate is all about the bytes8 sent as an argument to the enter() function. There are three statement to pass in gate. The first one is: 
+
+        require(uint32(uint64(_gateKey)) == uint16(uint64(_gateKey))
+
+    This statement is all about the truncation process that happens when casting from a larger to smaller uint. The max for uint16 is #FFFF while for uint32 it is #FFFFFFFF. This cast will take it's final result from the end so in an 8 byte integer, the last 2 bytes will be taken for uint16 and last 4 for uint32. Which means if we set the two bytes in uint32 that are missing to zero, the cast output for both the uint32 and uint16 will be the same. So in our 8 byte integer, we have 0xXXXXXXXX0000XXXX where X's can be any hex byte to pass this gaurd. The next statement:
+
+        (uint32(uint64(_gateKey)) != uint64(_gateKey)
+    
+    Same as the last gaurd, this is just targeting the truncation process in casting uints. For this one to pass, all we need is 0xYYYYYYYYXXXXXXXX, where X's can be any hex byte while YYYYYYYY /= 0x00000000. The final statement:
+
+        require(uint32(uint64(_gateKey)) == uint16(tx.origin)
+    
+    This guard dicates that the last 4 bytes of the submitted arguemnt is equal to the last two bytes of the calling-wallet's address. So we have 0xXXXXXXXX0000YYYY where the X's can be any hex bytes and YYYY = the last 2 bytes of calling-wallet's address.
+
+    So putting this all together, out the 8 total bytes to submit, the first 4 can be anything not equal to zero, the next 2 MUST be zero, and the final 2 are the final 2 hex bytes of msg.sender. I simply hard coded this but it could also be derieved from the global variable.
