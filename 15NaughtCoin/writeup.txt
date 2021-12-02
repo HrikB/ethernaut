@@ -1,0 +1,5 @@
+This problem was about reading the ERC20 Token Standard contract and the transferring protocols within it. There are two ways to transfer tokens from an ERC20 contract. One is the standard peer to peer transfer method. However this method was time lcoked by the contract for 10 years so the point of this problem was to make use of the other way.
+
+The other way is for the owner of the tokens to approve a third party to transfer funds of the token in and out of their wallet, generally useful for exchanges. 
+
+So to exploit this, you would need two wallets. The first thing I did is approved my second wallet to control all of my funds. After this, I went into the second wallet and transfered all the funds out of my initial wallet and moved it to the second wallet (although to complete this challenge, you could theoretically transfer them to any non-zero address). 
