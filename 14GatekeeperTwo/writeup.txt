@@ -1,0 +1,24 @@
+There are three gates to pass before making myself the entrant
+
+(1) The first gate is very simple. The transaction origin cannot be the same as msg.sender. All I have to do is use a contract to initate the function call
+
+(2) The second gate is all about understanding the EXTCODESIZE Opcode. The gate is:
+
+        uint x;
+        assembly { x := extcodesize(caller()) }
+        require(x == 0);
+
+    Extcodesize() will return the size of a contract given an address as a paramter. The parameter also makes an assembly call to CALLER which, according to Mastering Ethereum: 
+
+        CALLER  //Get the address of the caller immediately responsible
+                //for this execution 
+    
+    So to pass this gate, the smart contract calling the function needs to have no code in it. While this is obviously impossible (since to call the function you will need code in the contract), we will need a workaround. The work around is that when code inside the constructor of a contract is running, extcodesize returns zero. So all we have to do pass the second gate is call our function inside the constructor.
+
+(3) The third gate is about understanding the XOR bitwise operator. The XOR operator takes two boolean operands and only returns true iff the operands are different. So it's going to look ateach bit and see if they are different, and if they are, it will return 1 (or true); In our require statement,
+
+        uint64(bytes8(keccak256(abi.encodePacked(msg.sender)))) ^ uint64(_gateKey) == uint64(0) - 1
+
+    we see that the result of the XOR operator should be. It actually uses an underflow to say it should equal the max 64 bit integer which means all TRUE. To replicate this in the current solidity version we will have to wrap our statement we want to underflow in unchecked {}. This is important because we will need it to perform the inverse of XOR which is just a rearranged XOR. C ^ A = B -> C ^ B = A. 
+
+    We can calcualte uint64(bytes8(keccak256(abi.encodePacked(msg.sender)))) in the called contract will be by using uint64(bytes8(keccak256(abi.encodePacked(address(this))))) in the calling contract. And then we can find uint64(0) - 1 as well and use the XOR to find the bytes we need to send.  
