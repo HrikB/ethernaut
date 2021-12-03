@@ -1,0 +1,1 @@
+This problem was simple enough... it did not require any code. You can simply use etherscan to track down the created contract and once you have the address call the destroy function with it's payable output pointed at your address.
