@@ -1,0 +1,3 @@
+The trick to this problem is the fact that the king state variable is updated AFTER a transfer statement without adequate handling of what happens if the transfer event fails. So what we want to make sure is that the transfer event never succeeds.
+
+The easiest way to do that would be to make a smart contract the king where the smart contract is missing both the receive() and fallback() function making the payment reject. This will break the game and no longer allow a change of kingship.
